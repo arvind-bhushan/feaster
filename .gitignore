@@ -1,0 +1,29 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+/bin/
+/feaster
+feaster
+
+# Test
+*.test
+*.out
+coverage.*
+
+# Go workspace / deps
+vendor/
+go.work
+go.work.sum
+
+# Env & secrets
+.env
+.env.local
+*.local
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
