@@ -49,4 +49,14 @@ Why: makes valid transitions clear and prevents illegal jumps (e.g. delivered→
 **Noted risk: POST /orders is not idempotent** — a retry would duplicate the order/charge. Flagged now; addressed with idempotency keys + a DB transaction later (Day 29/51).
 
 ---
+## Day 4 — Transport security (TLS/HTTPS)
+
+**Decision: Feaster serves plain HTTP in local dev; TLS is terminated at the proxy/load balancer in production.**
+Why: the app handles passwords + JWTs, so production traffic MUST be HTTPS (TLS gives encryption, integrity, and server authentication via a CA-signed certificate — preventing sniffing, tampering, and impersonation). But the Go app itself doesn't need to do TLS: in production a reverse proxy / load balancer / CDN (e.g. Nginx, Cloudflare) terminates TLS and forwards plain HTTP to the app internally. Locally there's no network to sniff, so `localhost:8080` over HTTP is fine and production-correct. This keeps the app code simple and matches how real deployments work.
+
+**Implication for tokens/cookies:** because production is HTTPS end-to-user, the JWT in the `Authorization` header (and any cookies) is encrypted in transit — a network eavesdropper can't steal it. Cookies (if used) will be set `Secure` (HTTPS-only) + `httpOnly` (JS can't read them).
+
+**Design phase complete.** Requirements → API → contract → transport all defined. Next: code.
+
+---
 *(New decisions appended per day as the design evolves.)*
