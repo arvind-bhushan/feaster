@@ -32,4 +32,21 @@ Why: ordering touches money/inventory — data must arrive complete and in order
 Why: `/orders/{id}` cleanly identifies one order; RESTful and cache-friendly.
 
 ---
+## Day 3 — API contract & status codes
+
+**Decision: Define exact request/response JSON per endpoint, with correct status codes, before coding.**
+Why: the JSON is the contract the client and the Go structs both follow. Locking it now prevents rework and makes the code a direct translation of the design.
+
+**Decision: Correct, specific HTTP status codes (201 create, 401 vs 403, 404, 409 conflict).**
+Why: codes are the client's machine-readable outcome. `201` (not `200`) for creation, `401` (not logged in) vs `403` (logged in but not allowed), `409` for out-of-stock — precise codes let clients react correctly and signal engineering care.
+
+**Decision: One consistent error shape `{ "error": { "code", "message" } }` everywhere.**
+Why: clients handle all errors uniformly by parsing `error.code`, instead of a different shape per endpoint.
+
+**Decision: Model order status as an explicit state machine (placed→preparing→out_for_delivery→delivered).**
+Why: makes valid transitions clear and prevents illegal jumps (e.g. delivered→placed); the PATCH /status endpoint will validate against it.
+
+**Noted risk: POST /orders is not idempotent** — a retry would duplicate the order/charge. Flagged now; addressed with idempotency keys + a DB transaction later (Day 29/51).
+
+---
 *(New decisions appended per day as the design evolves.)*
